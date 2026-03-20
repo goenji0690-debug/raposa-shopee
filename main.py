@@ -15,34 +15,30 @@ def run():
 # --- CONFIGURAÇÃO DO BOT ---
 TOKEN = "8722324715:AAHb7C7meKBqELEj_LGNijhT0dlhJL_eBN4"
 ID_CANAL = "-1002581284569"
-MEU_ID = 6599857002
 
 bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(func=lambda m: True)
 def processar(message):
-    print(f"Mensagem recebida: {message.text}")
+    link = message.text
+    print(f"Recebi isso aqui: {link}") # Isso vai aparecer nos logs da Render
     
-    if message.chat.id == MEU_ID:
-        link = message.text
-        if "shopee" in link.lower() or "shope.ee" in link.lower():
-            legenda = (
-                "🟠 **OFERTA SHOPEE!** 🟠\n"
-                "➖➖➖➖➖➖➖➖➖➖\n\n"
-                f"🛒 **Compre aqui:** {link}\n\n"
-                "🚚 *Confira se há cupons de frete grátis!*"
-            )
-            try:
-                bot.send_message(ID_CANAL, legenda, parse_mode="Markdown")
-                bot.reply_to(message, "✅ Postado no canal com sucesso!")
-            except Exception as e:
-                bot.reply_to(message, f"❌ Erro ao postar: {e}\nVerifique se o bot é ADM do canal.")
-        else:
-            bot.reply_to(message, "⚠️ Isso não parece um link da Shopee!")
+    if "shopee" in link.lower() or "shope.ee" in link.lower():
+        legenda = (
+            "🟠 **OFERTA SHOPEE!** 🟠\n"
+            "➖➖➖➖➖➖➖➖➖➖\n\n"
+            f"🛒 **Compre aqui:** {link}\n\n"
+            "🚚 *Confira se há cupons de frete grátis!*"
+        )
+        try:
+            bot.send_message(ID_CANAL, legenda, parse_mode="Markdown")
+            bot.reply_to(message, "✅ Enviado para o canal!")
+        except Exception as e:
+            bot.reply_to(message, f"❌ Erro ao postar. Verifique se sou ADM do canal!\nErro: {e}")
+    else:
+        bot.reply_to(message, "⚠️ Por favor, mande um link da Shopee.")
 
 if __name__ == "__main__":
-    # Inicia o servidor Flask em uma thread separada
     t = threading.Thread(target=run)
     t.start()
-    # Inicia o bot
     bot.polling(none_stop=True)
