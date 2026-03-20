@@ -3,14 +3,13 @@ import os
 from flask import Flask
 from threading import Thread
 
+# --- SERVIDOR PARA RENDER ---
 app = Flask('')
-
 @app.route('/')
-def home():
-    return "Bot de Ofertas Shopee Ativo!"
+def home(): 
+    return "Bot Shopee Raposa Ativo!"
 
 def run():
-    # A Render exige a porta 10000 por padrão em muitos casos
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
 
@@ -19,35 +18,33 @@ def keep_alive():
     t.start()
 
 # --- CONFIGURAÇÃO ---
-TOKEN = "8722324715:AAHb7C7meKBqELEj_LGNijhT0dlhJL_eBN4"
+TOKEN = "8722324715:AAFBGt_Q5laJqxjuv9fnQaImL-7z88zYPjo"
 ID_CANAL = "-1002581284569"
-# Teu ID que garante a comissão (visto no teu link de exemplo)
-MEU_ID_AFILIADO = "AUpPs68ZBd"
 
 bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(func=lambda m: True)
-def msg_recebida(message):
-    link_original = message.text.strip()
+def processar_shopee(message):
+    link = message.text.strip()
     
-    if "shopee" in link_original.lower() or "shope.ee" in link_original.lower():
-        # Se mandares um link curto da shopee, ele apenas posta. 
-        # O ideal é mandares o link já convertido pelo app para não haver erro de comissão.
+    # Verifica se o link é da Shopee
+    if "shopee" in link.lower() or "shope.ee" in link.lower():
         legenda = (
             "🔥 **OFERTA RELÂMPAGO SHOPEE!** 🔥\n"
             "➖➖➖➖➖➖➖➖➖➖➖➖\n\n"
-            "💰 **CONFIRA O PREÇO NO LINK!**\n\n"
-            f"🛒 **COMPRE AQUI:** {link_original}\n\n"
-            "🚚 *Dica: Use o cupom de Frete Grátis!*"
+            "💰 **O PREÇO BAIXOU MUITO!**\n"
+            "👉 *Confira o valor atualizado no link abaixo:*\n\n"
+            f"🛒 **COMPRE AQUI:** {link}\n\n"
+            "🚚 *Dica: Use o cupom de Frete Grátis no App!*"
         )
         
         try:
             bot.send_message(ID_CANAL, legenda, parse_mode="Markdown")
-            bot.reply_to(message, "✅ Postado com Sucesso!")
+            bot.reply_to(message, "✅ Postado na Toca da Raposa!")
         except Exception as e:
-            bot.reply_to(message, f"❌ Erro ao enviar: {e}")
+            bot.reply_to(message, f"❌ Erro ao postar: {e}")
 
 if __name__ == "__main__":
     keep_alive()
-    print("Bot Ligado!")
+    print("Bot Shopee Online!")
     bot.infinity_polling()
