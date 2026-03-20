@@ -24,32 +24,20 @@ bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(func=lambda m: True)
 def msg_recebida(message):
-    texto_recebido = message.text
+    link = message.text.strip()
     
-    # Se você mandar "link, preço", ele separa os dois
-    if "," in texto_recebido:
-        partes = texto_recebido.split(",")
-        link = partes[0].strip()
-        preco = partes[1].strip()
-    else:
-        link = texto_recebido.strip()
-        preco = "Confira no site!" # Texto padrão se você esquecer o preço
-
     if "shopee" in link.lower() or "shope.ee" in link.lower():
         legenda = (
-            "🔥 **TOCA DA RAPOSA - OFERTA SHOPEE** 🔥\n"
+            "🔥 **OFERTA RELÂMPAGO SHOPEE!** 🔥\n"
             "➖➖➖➖➖➖➖➖➖➖➖➖\n\n"
-            f"💰 **PREÇO: R$ {preco}**\n\n"
+            "💰 **O PREÇO BAIXOU MUITO!**\n"
+            "👉 *Confira o valor atualizado no link abaixo:*\n\n"
             f"🛒 **COMPRE AQUI:** {link}\n\n"
-            "🚚 *Use o cupom de Frete Grátis no App!*"
+            "🚚 *Dica: Use o cupom de Frete Grátis!*"
         )
         
         try:
             bot.send_message(ID_CANAL, legenda, parse_mode="Markdown")
-            bot.reply_to(message, f"✅ Postado com preço R$ {preco}!")
+            bot.reply_to(message, "✅ Postado no canal!")
         except Exception as e:
             bot.reply_to(message, f"❌ Erro: {e}")
-
-if __name__ == "__main__":
-    keep_alive()
-    bot.infinity_polling()
