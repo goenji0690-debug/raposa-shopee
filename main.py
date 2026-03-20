@@ -3,15 +3,14 @@ import os
 from flask import Flask
 from threading import Thread
 
-# --- SERVIDOR WEB PARA A RENDER MANTER O BOT VIVO ---
+# --- SERVIDOR WEB ---
 app = Flask('')
 
 @app.route('/')
 def home():
-    return "Bot Shopee Raposa Online!"
+    return "Bot Shopee Raposa Ativo!"
 
 def run():
-    # A Render exige o uso de uma porta dinâmica
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
 
@@ -20,18 +19,17 @@ def keep_alive():
     t.daemon = True
     t.start()
 
-# --- CONFIGURAÇÃO DO BOT (TOKEN ATUALIZADO) ---
-TOKEN = "8722324715:AAFBGt_Q5laJqxjuv9fnQaImL-7z88zYPjo"
+# --- CONFIGURAÇÃO (TOKEN NOVO) ---
+TOKEN = "8722324715:AAEb8rcwcXD95jEInrj7WmWDXfhukTteRVk"
 ID_CANAL = "-1002581284569"
 
 bot = telebot.TeleBot(TOKEN)
 
-# --- PROCESSAMENTO DAS MENSAGENS ---
+# --- LÓGICA DAS OFERTAS ---
 @bot.message_handler(func=lambda m: True)
 def processar_shopee(message):
     link = message.text.strip()
     
-    # Verifica se o link enviado é da Shopee
     if "shopee" in link.lower() or "shope.ee" in link.lower():
         legenda = (
             "🔥 **OFERTA RELÂMPAGO SHOPEE!** 🔥\n"
@@ -46,13 +44,9 @@ def processar_shopee(message):
             bot.send_message(ID_CANAL, legenda, parse_mode="Markdown")
             bot.reply_to(message, "✅ Postado com sucesso na Toca da Raposa!")
         except Exception as e:
-            bot.reply_to(message, f"❌ Erro ao postar no canal: {e}")
-    else:
-        bot.reply_to(message, "⚠️ Por favor, envie um link válido da Shopee.")
+            print(f"Erro ao postar: {e}")
 
-# --- INICIALIZAÇÃO ---
 if __name__ == "__main__":
-    keep_alive() # Inicia o servidor Flask em segundo plano
-    print("Bot Raposa Shopee Iniciado com sucesso!")
-    # O bot infinity_polling mantém o robô escutando o Telegram
+    keep_alive()
+    print("Bot Raposa Online com Token Novo!")
     bot.infinity_polling()
