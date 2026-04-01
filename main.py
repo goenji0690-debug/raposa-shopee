@@ -1,49 +1,54 @@
 import telebot
+import requests
 import os
 from flask import Flask
 from threading import Thread
 
-# Configuração do Servidor para a Render não derrubar o bot
+# --- SISTEMA PARA O RENDER NÃO DAR TIMEOUT (FLASK) ---
 app = Flask('')
+
 @app.route('/')
-def home(): 
-    return "Bot Shopee Ativo", 200
+def home():
+    return "Bot Shopee Online! 🦊🛍️"
 
 def run():
-    port = int(os.environ.get('PORT', 10000))
+    # O Render fornece a porta automaticamente, mas usamos 8081 como padrão se local
+    port = int(os.environ.get("PORT", 8081))
     app.run(host='0.0.0.0', port=port)
 
-# --- CONFIGURAÇÃO ---
-# Ele tenta pegar o token da Render primeiro (TOKEN_BOT), se não achar, usa o seu fixo.
-TOKEN = os.environ.get('TOKEN_BOT', "8722324715:AAEb8rcwcXD95jEInrj7WmWDXfhukTteRVk")
-ID_CANAL = "-1002581284569"
-
-bot = telebot.TeleBot(TOKEN)
-
-@bot.message_handler(func=lambda m: True)
-def processar_shopee(message):
-    link = message.text.strip()
-    # Verifica se o link é da Shopee
-    if "shopee" in link.lower() or "shp.ee" in link.lower() or "shope.ee" in link.lower():
-        legenda = (
-            "🔥 **OFERTA RELÂMPAGO SHOPEE!** 🔥\n"
-            "➖➖➖➖➖➖➖➖➖➖➖➖\n\n"
-            "💰 **O PREÇO BAIXOU MUITO!**\n"
-            "👉 *Confira o valor atualizado no link abaixo:*\n\n"
-            f"🛒 **COMPRE AQUI:** {link}\n\n"
-            "🚚 *Dica: Use o cupom de Frete Grátis no App!*"
-        )
-        try:
-            bot.send_message(ID_CANAL, legenda, parse_mode="Markdown")
-            bot.reply_to(message, "✅ Postado no Canal da Raposa (Shopee)!")
-        except Exception as e:
-            print(f"Erro ao postar: {e}")
-            bot.reply_to(message, "❌ Erro ao postar. Verifique se sou admin do canal.")
-
-if __name__ == "__main__":
+def start_flask():
     t = Thread(target=run)
-    t.daemon = True
     t.start()
+
+# --- CONFIGURAÇÕES DA SHOPEE ---
+# IMPORTANTE: Usei o token da Shopee que você passou (8722...)
+TOKEN_SHOPEE = "8722324715:AAEb8rcwcXD95jEInrj7WmWDXfhukTteRVk"
+ID_CANAL_OFERTAS = "@raposaqueimaestoque" 
+
+bot = telebot.TeleBot(TOKEN_SHOPEE)
+
+@bot.message_handler(func=lambda message: "shope.ee" in message.text or "shopee.com.br" in message.text)
+def processar_link_shopee(message):
+    link_original = message.text
     
-    print("🛍️ BOT SHOPEE LIGADO!")
+    try:
+        # Aqui vai a sua lógica de conversão da Shopee (Link de Afiliado)
+        # Por enquanto, ele apenas reposta o link limpo
+        link_final = link_original.split('?')[0] 
+
+        texto_canal = (
+            "🦊 *ACHADO NA SHOPEE!* 🛍️\n\n"
+            f"👉 {link_final}\n\n"
+            "#Shopee #Ofertas #Raposa"
+        )
+        bot.send_message(ID_CANAL_OFERTAS, texto_canal, parse_mode="Markdown")
+        bot.reply_to(message, "✅ Postado na Shopee com sucesso!")
+
+    except Exception as e:
+        bot.reply_to(message, f"❌ Erro Shopee: {e}")
+
+# --- EXECUÇÃO DO BOT ---
+if __name__ == "__main__":
+    start_flask() # Inicia o servidor web para o Render ficar feliz
+    print("🚀 Raposa Shopee Ativa!")
     bot.infinity_polling()
