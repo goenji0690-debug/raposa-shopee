@@ -9,46 +9,52 @@ app = Flask('')
 
 @app.route('/')
 def home():
-    return "Bot Shopee Online! 🦊🛍️"
+    return "Bot Raposa Online! 🦊🚀"
 
 def run():
-    # O Render fornece a porta automaticamente, mas usamos 8081 como padrão se local
-    port = int(os.environ.get("PORT", 8081))
+    # O Render fornece a porta automaticamente, o padrão é 10000
+    port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
 
 def start_flask():
     t = Thread(target=run)
     t.start()
 
-# --- CONFIGURAÇÕES DA SHOPEE ---
-# IMPORTANTE: Usei o token da Shopee que você passou (8722...)
-TOKEN_SHOPEE = "8722324715:AAEb8rcwcXD95jEInrj7WmWDXfhukTteRVk"
-ID_CANAL_OFERTAS = "@raposaqueimaestoque" 
+# --- CONFIGURAÇÃO AUTOMÁTICA ---
+# IMPORTANTE: No Render, vá em 'Environment' e adicione a Key: TOKEN_BOT
+TOKEN = os.environ.get("TOKEN_BOT")
+ID_CANAL = "@raposaqueimaestoque" 
 
-bot = telebot.TeleBot(TOKEN_SHOPEE)
+if not TOKEN:
+    print("❌ ERRO: A variável TOKEN_BOT não foi encontrada no Render!")
 
-@bot.message_handler(func=lambda message: "shope.ee" in message.text or "shopee.com.br" in message.text)
-def processar_link_shopee(message):
-    link_original = message.text
+bot = telebot.TeleBot(TOKEN)
+
+# --- LÓGICA DE FILTRO (SHOPEE E MERCADO LIVRE) ---
+@bot.message_handler(func=lambda message: True)
+def processar_links(message):
+    texto = message.text.lower()
     
     try:
-        # Aqui vai a sua lógica de conversão da Shopee (Link de Afiliado)
-        # Por enquanto, ele apenas reposta o link limpo
-        link_final = link_original.split('?')[0] 
+        # Se for link da Shopee
+        if "shope.ee" in texto or "shopee.com.br" in texto:
+            link_final = message.text.split('?')[0]
+            msg = f"🦊 *ACHADO NA SHOPEE!* 🛍️\n\n👉 {link_final}\n\n#Shopee #Ofertas"
+            bot.send_message(ID_CANAL, msg, parse_mode="Markdown")
+            bot.reply_to(message, "✅ Postado na Shopee!")
 
-        texto_canal = (
-            "🦊 *ACHADO NA SHOPEE!* 🛍️\n\n"
-            f"👉 {link_final}\n\n"
-            "#Shopee #Ofertas #Raposa"
-        )
-        bot.send_message(ID_CANAL_OFERTAS, texto_canal, parse_mode="Markdown")
-        bot.reply_to(message, "✅ Postado na Shopee com sucesso!")
+        # Se for link do Mercado Livre
+        elif "mercadolivre.com.br" in texto or "mlb.io" in texto:
+            link_final = message.text.split('?')[0]
+            msg = f"🦊 *OFERTA NO MERCADO LIVRE!* 📦\n\n👉 {link_final}\n\n#ML #Promo"
+            bot.send_message(ID_CANAL, msg, parse_mode="Markdown")
+            bot.reply_to(message, "✅ Postado no Mercado Livre!")
 
     except Exception as e:
-        bot.reply_to(message, f"❌ Erro Shopee: {e}")
+        print(f"Erro ao postar: {e}")
 
-# --- EXECUÇÃO DO BOT ---
+# --- EXECUÇÃO ---
 if __name__ == "__main__":
-    start_flask() # Inicia o servidor web para o Render ficar feliz
-    print("🚀 Raposa Shopee Ativa!")
+    start_flask()
+    print(f"🚀 Bot Iniciado com Sucesso!")
     bot.infinity_polling()
